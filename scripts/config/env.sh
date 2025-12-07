@@ -24,7 +24,7 @@ GITHUB_API_URL="https://api.github.com"
 # ========================================
 # GEMINI_API_KEY: Google Gemini API 키 (GitHub Secrets에서 주입)
 GEMINI_API_KEY="${GEMINI_API_KEY:-}"
-GEMINI_MODEL="gemini-1.5-flash"  # 무료 모델
+GEMINI_MODEL="gemini-pro"  # 무료 모델
 GEMINI_MAX_TOKENS=2000      # AI 응답 최대 토큰 수
 
 # ========================================
