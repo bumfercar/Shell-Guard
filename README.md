@@ -1,64 +1,144 @@
-# Shell-Guard
+# 🛡️ Shell-Guard
 
-GitHub PR 자동 분석 및 보안 스캔 시스템 (Bash 전용)
+GitHub PR 자동 분석 및 보안 스캔 시스템 (Pure Bash)
 
-## 기능
+**어떤 GitHub 레포지토리에서든 사용 가능합니다!**
 
-- PR diff 자동 추출 및 분석
-- 민감 정보 스캔 (API 키, 패스워드, 토큰 등)
-- 코드 스타일 검사
-- AI 기반 코드 리뷰
-- GitHub PR 자동 댓글
+## ✨ 주요 기능
 
-## 사용법
+- 🔐 **보안 스캔**: API 키, 비밀번호, 토큰 등 민감 정보 자동 감지
+- 🧹 **코드 스타일 검사**: trailing whitespace, TODO/FIXME 등
+- 🤖 **AI 코드 리뷰**: Google Gemini로 자동 리뷰 (무료)
+- 💬 **자동 PR 댓글**: 분석 결과를 PR에 자동으로 댓글 작성
 
-### 1. GitHub Repository Secrets 설정
+---
 
-- `GITHUB_TOKEN`: 자동 제공됨
-- `GEMINI_API_KEY`: Google Gemini API 키 (https://aistudio.google.com/app/apikey)
+## 🚀 빠른 시작 (3단계)
 
-### 2. 파일 배치
+### 1️⃣ Gemini API 키 발급 (무료)
 
-프로젝트를 그대로 GitHub 저장소에 push
+1. https://aistudio.google.com/app/apikey 접속
+2. **Get API Key** 클릭
+3. 키 복사
 
-### 3. PR 생성
+### 2️⃣ GitHub Actions 워크플로우 추가
 
-PR 생성 시 자동으로 분석 실행
+**당신의 레포지토리**에 다음 파일 생성:
 
-### 4. 댓글 명령어
+`.github/workflows/shell-guard.yml`
 
-- `/scan`: 재스캔
-- `/ai-review`: AI 리뷰 재실행
-- `/approve`: PR 승인
-- `/reject`: PR 거부
+```yaml
+name: Shell-Guard PR Analysis
 
-## 로컬 테스트
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout Shell-Guard
+        uses: actions/checkout@v3
+        with:
+          repository: bumfercar/Shell-Guard
+          path: shell-guard
+
+      - name: Setup environment
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          cp shell-guard/scripts/config/patterns.txt.example shell-guard/scripts/config/patterns.txt
+
+      - name: Run Shell-Guard Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          chmod +x shell-guard/scripts/main_analyzer.sh
+          chmod +x shell-guard/scripts/modules/*.sh
+          bash shell-guard/scripts/main_analyzer.sh
+```
+
+### 3️⃣ GitHub Secrets 설정
+
+1. 당신의 레포 → **Settings** → **Secrets and variables** → **Actions**
+2. **New repository secret** 클릭
+3. 다음 추가:
+   - **Name**: `GEMINI_API_KEY`
+   - **Value**: (1단계에서 복사한 키)
+
+---
+
+## 🎉 완료!
+
+이제 PR을 생성하면 자동으로:
+- ✅ 보안 스캔 실행
+- ✅ 코드 스타일 검사
+- ✅ AI 리뷰 수행
+- ✅ 결과를 PR 댓글로 작성
+
+---
+
+## 📋 댓글 명령어
+
+PR 댓글에서 다음 명령어 사용 가능:
+
+- `/scan` - 재스캔
+- `/ai-review` - AI 리뷰 재실행
+- `/approve` - PR 승인
+- `/reject` - PR 거부
+
+---
+
+## 🔧 커스터마이징
+
+### 보안 패턴 추가
+
+`shell-guard/scripts/config/patterns.txt.example` 파일을 복사하여 수정:
 
 ```bash
-# 환경 변수 설정
-export GITHUB_TOKEN="your_token"
-export GEMINI_API_KEY="your_gemini_key"
-export PR_NUMBER="1"
-export REPO_OWNER="owner"
-export REPO_NAME="repo"
-
-# 스크립트 실행
-bash scripts/main_analyzer.sh
+# 형식: 패턴명:정규식:설명
+MY_SECRET:my_secret_[0-9]+:My custom secret pattern
 ```
 
-## 디렉토리 구조
+### AI 모델 변경
 
+워크플로우에서 환경 변수 추가:
+
+```yaml
+env:
+  GEMINI_MODEL: "gemini-1.5-pro"  # 또는 다른 모델
 ```
-.github/workflows/    # GitHub Actions
-scripts/
-  config/            # 설정 파일
-  modules/           # 분석 모듈
-  main_analyzer.sh   # 메인 스크립트
-```
 
-## Clean Test
-Testing Shell-Guard with Gemini API
+---
 
-## Final Test
+## 🐛 문제 해결
 
-Testing complete Shell-Guard workflow with Gemini AI
+### AI 리뷰가 작동하지 않음
+- Gemini API 키가 올바르게 설정되었는지 확인
+- GitHub Secrets에 `GEMINI_API_KEY`가 있는지 확인
+
+### 보안 스캔 오탐지
+- `patterns.txt`에서 해당 패턴 제거 또는 수정
+
+---
+
+## 📄 라이선스
+
+MIT License
+
+---
