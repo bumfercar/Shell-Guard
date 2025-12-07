@@ -30,7 +30,8 @@ extract_diff() {
     # Unified format으로 diff 추출 (컨텍스트 라인 0개)
     # --unified=0: 변경된 라인만 표시
     # --no-color: 색상 코드 제거
-    git diff "${BASE_REF}...${HEAD_REF}" --unified=3 --no-color > "$DIFF_FILE" 2>&1 || {
+    # patterns.txt 제외 (자기 자신 스캔 방지)
+    git diff "${BASE_REF}...${HEAD_REF}" --unified=3 --no-color -- . ':!scripts/config/patterns.txt' > "$DIFF_FILE" 2>&1 || {
         log_error "Failed to extract git diff"
         return 1
     }
