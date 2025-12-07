@@ -117,7 +117,7 @@ MY_SECRET:my_secret_[0-9]+:My custom secret pattern
 
 ### AI 모델 변경 (선택사항)
 
-기본 모델은 `gemini-1.5-flash` (무료)입니다. 다른 모델을 사용하려면:
+기본 모델은 `gemini-flash-latest` (무료)입니다. 다른 모델을 사용하려면:
 
 ```yaml
 env:
