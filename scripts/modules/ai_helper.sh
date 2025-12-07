@@ -91,7 +91,7 @@ call_gemini_api() {
     local prompt="$1"
 
     # Gemini API URL
-    local api_url="https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}"
+    local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}"
 
     # JSON 페이로드 생성
     local json_payload
@@ -155,7 +155,7 @@ call_gemini_api() {
 # ========================================
 format_ai_result_markdown() {
     if [ ! -f "$AI_RESULT" ]; then
-        echo "⚠️ **AI review not performed**"
+        echo "⚠️ **AI 리뷰가 수행되지 않았습니다**"
         return 0
     fi
 
@@ -163,9 +163,11 @@ format_ai_result_markdown() {
     ai_content=$(<"$AI_RESULT")
 
     if [ -z "$ai_content" ] || [[ "$ai_content" == AI\ review\ * ]]; then
-        echo "⚠️ **AI review skipped or failed**"
+        echo "⚠️ **AI 리뷰를 건너뛰었습니다**"
         echo ""
-        echo "$ai_content"
+        echo "**사유:** $ai_content"
+        echo ""
+        echo "💡 **참고:** Gemini API 키가 올바르게 설정되어 있는지 확인하세요."
         return 0
     fi
 
