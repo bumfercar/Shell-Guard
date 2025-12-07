@@ -22,10 +22,10 @@ GITHUB_API_URL="https://api.github.com"
 # ========================================
 # AI API 관련 환경 변수
 # ========================================
-# OPENAI_API_KEY: OpenAI API 키 (GitHub Secrets에서 주입)
-OPENAI_API_KEY="${OPENAI_API_KEY:-}"
-OPENAI_MODEL="gpt-4o-mini"  # GPT 모델
-OPENAI_MAX_TOKENS=2000      # AI 응답 최대 토큰 수
+# GEMINI_API_KEY: Google Gemini API 키 (GitHub Secrets에서 주입)
+GEMINI_API_KEY="${GEMINI_API_KEY:-}"
+GEMINI_MODEL="gemini-1.5-flash"  # 무료 안정 모델
+GEMINI_MAX_TOKENS=2000      # AI 응답 최대 토큰 수
 
 # ========================================
 # 분석 설정

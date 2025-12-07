@@ -8,17 +8,17 @@ GitHub PR 자동 분석 및 보안 스캔 시스템 (Pure Bash)
 
 - 🔐 **보안 스캔**: API 키, 비밀번호, 토큰 등 민감 정보 자동 감지
 - 🧹 **코드 스타일 검사**: trailing whitespace, TODO/FIXME 등
-- 🤖 **AI 코드 리뷰**: OpenAI GPT로 자동 리뷰
+- 🤖 **AI 코드 리뷰**: Google Gemini로 자동 리뷰 (무료)
 - 💬 **자동 PR 댓글**: 분석 결과를 PR에 자동으로 댓글 작성
 
 ---
 
 ## 🚀 빠른 시작 (3단계)
 
-### 1️⃣ OpenAI API 키 발급
+### 1️⃣ Gemini API 키 발급 (무료)
 
-1. https://platform.openai.com/api-keys 접속
-2. **Create new secret key** 클릭
+1. https://aistudio.google.com/app/apikey 접속
+2. **Get API Key** 클릭
 3. 키 복사
 
 ### 2️⃣ GitHub Actions 워크플로우 추가
@@ -61,7 +61,7 @@ jobs:
       - name: Run Shell-Guard Analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
@@ -78,7 +78,7 @@ jobs:
 1. 당신의 레포 → **Settings** → **Secrets and variables** → **Actions**
 2. **New repository secret** 클릭
 3. 다음 추가:
-   - **Name**: `OPENAI_API_KEY`
+   - **Name**: `GEMINI_API_KEY`
    - **Value**: (1단계에서 복사한 키)
 
 ---
@@ -121,7 +121,7 @@ MY_SECRET:my_secret_[0-9]+:My custom secret pattern
 
 ```yaml
 env:
-  OPENAI_MODEL: "gpt-4o"  # 또는 다른 GPT 모델
+  GEMINI_MODEL: "gemini-1.5-pro"  # 또는 다른 Gemini 모델
 ```
 
 ---
@@ -129,9 +129,8 @@ env:
 ## 🐛 문제 해결
 
 ### AI 리뷰가 작동하지 않음
-- OpenAI API 키가 올바르게 설정되었는지 확인
-- GitHub Secrets에 `OPENAI_API_KEY`가 있는지 확인
-- API 키에 충분한 크레딧이 있는지 확인
+- Gemini API 키가 올바르게 설정되었는지 확인
+- GitHub Secrets에 `GEMINI_API_KEY`가 있는지 확인
 
 ### 보안 스캔 오탐지
 - `patterns.txt`에서 해당 패턴 제거 또는 수정
