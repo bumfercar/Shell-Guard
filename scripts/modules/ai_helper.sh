@@ -91,8 +91,8 @@ call_gemini_api() {
     local prompt="$1"
 
     # Gemini API URL
-    local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}"
-
+    #local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}"
+local api_url="https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}"
     # JSON 페이로드 생성
     local json_payload
     json_payload=$(jq -n \
