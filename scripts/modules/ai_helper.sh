@@ -122,9 +122,9 @@ call_openai_api() {
     local curl_status=$?
 
     if [ $curl_status -ne 0 ]; then
-        log_error "OpenAI API call failed (curl error: $curl_status)"
-        echo "AI review failed: API call error" > "$AI_RESULT"
-        return 1
+        log_warning "OpenAI API call failed (curl error: $curl_status)"
+        echo "AI review skipped: API call error" > "$AI_RESULT"
+        return 0
     fi
 
     # 응답 파싱
@@ -132,15 +132,15 @@ call_openai_api() {
     ai_content=$(echo "$response" | jq -r '.choices[0].message.content' 2>/dev/null || echo "")
 
     if [ -z "$ai_content" ] || [ "$ai_content" == "null" ]; then
-        log_error "OpenAI API returned invalid response"
+        log_warning "OpenAI API returned invalid response"
 
         # 에러 메시지 확인
         local error_msg
         error_msg=$(echo "$response" | jq -r '.error.message' 2>/dev/null || echo "Unknown error")
-        log_error "API Error: $error_msg"
+        log_warning "API Error: $error_msg"
 
-        echo "AI review failed: Invalid API response" > "$AI_RESULT"
-        return 1
+        echo "AI review skipped: $error_msg" > "$AI_RESULT"
+        return 0
     fi
 
     # 결과 저장
