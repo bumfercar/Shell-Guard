@@ -55,3 +55,6 @@ scripts/
   modules/           # 분석 모듈
   main_analyzer.sh   # 메인 스크립트
 ```
+
+## Clean Test
+Testing Shell-Guard with Gemini API
