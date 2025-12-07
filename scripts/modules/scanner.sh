@@ -87,14 +87,23 @@ format_scan_result_markdown() {
 
     if [ "$total_issues" -eq 0 ]; then
         echo "✅ **No security issues detected**"
+        echo ""
+        echo "모든 변경사항이 보안 검사를 통과했습니다."
         return 0
     fi
 
     # Markdown 형식으로 출력
     cat <<EOF
-🚨 **$total_issues security issue(s) detected**
+# 🚨 보안 경고: 민감 정보 감지됨
 
-This PR contains potentially sensitive information that should not be committed:
+**검출된 이슈 수:** $total_issues개
+
+## ⚠️ 발견된 문제
+
+이 Pull Request에서 **민감한 정보가 포함된 코드**가 감지되었습니다.
+보안상 매우 위험하므로 **즉시 조치가 필요**합니다.
+
+---
 
 EOF
 
@@ -132,10 +141,37 @@ EOF
     cat <<EOF
 
 ---
-**⚠️ Action Required:**
-- Remove all sensitive information before merging
-- Use environment variables or secret management systems
-- Never commit credentials, API keys, or private keys to version control
+
+## 🔧 즉시 해야 할 조치
+
+### 1단계: 민감 정보 제거
+- 위에서 감지된 모든 API 키, 비밀번호, 토큰을 코드에서 **완전히 삭제**하세요
+- 하드코딩된 credential을 찾아 제거하세요
+
+### 2단계: 안전한 방법으로 대체
+- **환경 변수** 사용: \`process.env.API_KEY\` 또는 \`os.getenv('API_KEY')\`
+- **GitHub Secrets** 활용: Repository Settings → Secrets and variables → Actions
+- **.env 파일** 사용 (단, .gitignore에 반드시 추가)
+
+### 3단계: 유출된 키 폐기 및 재발급
+⚠️ **중요:** 이미 GitHub에 커밋된 키는 유출된 것으로 간주해야 합니다!
+- 감지된 API 키/토큰을 **즉시 폐기(revoke)**하세요
+- 새로운 키를 재발급받으세요
+- 과거 커밋 히스토리에도 키가 남아있으므로 주의하세요
+
+### 4단계: PR 수정 후 재제출
+- 민감 정보를 모두 제거한 후 새로운 커밋을 푸시하세요
+- Shell-Guard가 자동으로 재검사를 수행합니다
+
+---
+
+## 📚 참고 자료
+- [GitHub Secrets 사용법](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
+- [환경 변수 관리 모범 사례](https://12factor.net/config)
+
+---
+
+**이 PR은 보안 이슈로 인해 자동으로 "Changes Requested" 상태로 변경되었습니다.**
 EOF
 
     return 0

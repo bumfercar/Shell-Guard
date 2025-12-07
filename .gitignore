@@ -6,6 +6,9 @@
 *.temp
 /scripts/tmp/
 
+# 보안 패턴 파일 (diff 스캔 방지)
+scripts/config/patterns.txt
+
 # 로그 파일
 *.log
 
