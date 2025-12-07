@@ -41,9 +41,9 @@ run_security_scan() {
         fi
 
         # Diff 파일에서 추가된 라인만 검사 ('+' 로 시작하는 라인)
-        # patterns.txt 파일 자체는 제외
+        # patterns.txt 파일 자체는 제외 (diff 헤더와 내용 모두)
         local matches
-        matches=$(grep '^+[^+]' "$DIFF_FILE" | grep -v 'patterns\.txt' | grep -E "$pattern_regex" || true)
+        matches=$(grep '^+[^+]' "$DIFF_FILE" | grep -v 'scripts/config/patterns.txt' | grep -v '^+++' | grep -E "$pattern_regex" || true)
 
         if [ -n "$matches" ]; then
             issues_found=$((issues_found + 1))
