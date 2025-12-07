@@ -25,6 +25,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
+          # patterns.txt 파일 생성 (.gitignore되어 있으므로)
+          cp scripts/config/patterns.txt.example scripts/config/patterns.txt
+
       - name: Run Shell-Guard Analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
