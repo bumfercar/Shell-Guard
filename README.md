@@ -58,3 +58,7 @@ scripts/
 
 ## Clean Test
 Testing Shell-Guard with Gemini API
+
+## Final Test
+
+Testing complete Shell-Guard workflow with Gemini AI
