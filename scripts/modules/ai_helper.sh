@@ -20,9 +20,9 @@ run_ai_review() {
         return 1
     fi
 
-    # OpenAI API 키 확인
-    if [ -z "$OPENAI_API_KEY" ]; then
-        log_warning "OPENAI_API_KEY not set. Skipping AI review"
+    # Gemini API 키 확인
+    if [ -z "$GEMINI_API_KEY" ]; then
+        log_warning "GEMINI_API_KEY not set. Skipping AI review"
         echo "AI review skipped (API key not configured)" > "$AI_RESULT"
         return 0
     fi
@@ -49,8 +49,8 @@ run_ai_review() {
     local prompt
     prompt=$(generate_ai_prompt "$diff_content")
 
-    # OpenAI API 호출
-    call_openai_api "$prompt"
+    # Gemini API 호출
+    call_gemini_api "$prompt"
 
     return $?
 }
@@ -85,54 +85,54 @@ EOF
 }
 
 # ========================================
-# 함수: OpenAI API 호출
+# 함수: Gemini API 호출
 # ========================================
-call_openai_api() {
+call_gemini_api() {
     local prompt="$1"
 
-    # JSON 페이로드 생성 (jq를 사용하여 안전하게 이스케이프)
+    # Gemini API URL
+    local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}"
+
+    # JSON 페이로드 생성
     local json_payload
     json_payload=$(jq -n \
-        --arg model "$OPENAI_MODEL" \
         --arg prompt "$prompt" \
-        --argjson max_tokens "$OPENAI_MAX_TOKENS" \
         '{
-            model: $model,
-            messages: [
+            contents: [
                 {
-                    role: "system",
-                    content: "You are a professional code reviewer. Provide detailed, actionable feedback in Korean."
-                },
-                {
-                    role: "user",
-                    content: $prompt
+                    parts: [
+                        {
+                            text: $prompt
+                        }
+                    ]
                 }
             ],
-            max_tokens: $max_tokens,
-            temperature: 0.3
+            generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 2000
+            }
         }')
 
     # API 호출
     local response
-    response=$(curl -s -X POST "$OPENAI_API_URL" \
+    response=$(curl -s -X POST "$api_url" \
         -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $OPENAI_API_KEY" \
         -d "$json_payload" 2>&1)
 
     local curl_status=$?
 
     if [ $curl_status -ne 0 ]; then
-        log_warning "OpenAI API call failed (curl error: $curl_status)"
+        log_warning "Gemini API call failed (curl error: $curl_status)"
         echo "AI review skipped: API call error" > "$AI_RESULT"
         return 0
     fi
 
     # 응답 파싱
     local ai_content
-    ai_content=$(echo "$response" | jq -r '.choices[0].message.content' 2>/dev/null || echo "")
+    ai_content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null || echo "")
 
     if [ -z "$ai_content" ] || [ "$ai_content" == "null" ]; then
-        log_warning "OpenAI API returned invalid response"
+        log_warning "Gemini API returned invalid response"
 
         # 에러 메시지 확인
         local error_msg
