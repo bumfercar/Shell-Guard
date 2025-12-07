@@ -1,6 +1,7 @@
 # 🛡️ Shell-Guard
 
 GitHub PR 자동 분석 및 보안 스캔 시스템 (Pure Bash)
+cncnn
 
 **어떤 GitHub 레포지토리에서든 사용 가능합니다!**
 
