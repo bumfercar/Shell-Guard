@@ -1,0 +1,40 @@
+name: PR Analysis
+
+# PR 생성 또는 업데이트 시 자동 실행
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 전체 히스토리를 가져와서 diff 분석 가능하게 함
+
+      - name: Set up environment
+        run: |
+          # jq 설치 확인 (Ubuntu에 기본 포함되어 있지만 확인)
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Run Shell-Guard Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          chmod +x scripts/main_analyzer.sh
+          chmod +x scripts/modules/*.sh
+          bash scripts/main_analyzer.sh

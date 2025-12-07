@@ -1,0 +1,74 @@
+# Shell-Guard 보안 스캔 정규식 패턴 목록
+# 각 줄은 "패턴명:정규식:설명" 형식
+
+# AWS 관련
+AWS_ACCESS_KEY:AKIA[0-9A-Z]{16}:AWS Access Key detected
+AWS_SECRET_KEY:aws_secret_access_key.*=.*['"'][A-Za-z0-9/+=]{40}['"']:AWS Secret Key detected
+AWS_ACCOUNT_ID:[0-9]{12}:AWS Account ID detected (potential sensitive info)
+
+# Private Keys
+RSA_PRIVATE_KEY:BEGIN RSA PRIVATE KEY:RSA Private Key detected
+OPENSSH_PRIVATE_KEY:BEGIN OPENSSH PRIVATE KEY:OpenSSH Private Key detected
+DSA_PRIVATE_KEY:BEGIN DSA PRIVATE KEY:DSA Private Key detected
+EC_PRIVATE_KEY:BEGIN EC PRIVATE KEY:EC Private Key detected
+PGP_PRIVATE_KEY:BEGIN PGP PRIVATE KEY:PGP Private Key detected
+
+# GitHub Tokens
+GITHUB_TOKEN:ghp_[A-Za-z0-9]{36}:GitHub Personal Access Token detected
+GITHUB_OAUTH:gho_[A-Za-z0-9]{36}:GitHub OAuth Token detected
+GITHUB_APP_TOKEN:ghu_[A-Za-z0-9]{36}:GitHub App Token detected
+GITHUB_REFRESH_TOKEN:ghr_[A-Za-z0-9]{36}:GitHub Refresh Token detected
+
+# API Keys (Generic)
+API_KEY_PATTERN:api[_-]?key.*=.*['"'][A-Za-z0-9]{20,}['"']:Generic API Key pattern detected
+SECRET_KEY_PATTERN:secret[_-]?key.*=.*['"'][A-Za-z0-9]{20,}['"']:Secret Key pattern detected
+ACCESS_TOKEN_PATTERN:access[_-]?token.*=.*['"'][A-Za-z0-9]{20,}['"']:Access Token pattern detected
+
+# Database Credentials
+MYSQL_PASSWORD:mysql.*password.*=.*['"'][^'"']+['"']:MySQL password detected
+POSTGRES_PASSWORD:postgres.*password.*=.*['"'][^'"']+['"']:PostgreSQL password detected
+MONGO_URI:mongodb(\+srv)?://[^:]+:[^@]+@:MongoDB connection string with credentials detected
+
+# Hardcoded Credentials
+PASSWORD_ASSIGNMENT:password\s*=\s*['"'][^'"']{3,}['"']:Hardcoded password detected
+USERNAME_PASSWORD:(username|user).*password:Username and password combination detected
+BASIC_AUTH:Authorization:\s*Basic\s+[A-Za-z0-9+/=]+:Basic Auth credentials detected
+
+# Cloud Provider Tokens
+HEROKU_API_KEY:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}:Heroku API Key detected
+SLACK_TOKEN:xox[baprs]-[0-9a-zA-Z]{10,}:Slack Token detected
+SLACK_WEBHOOK:https://hooks\.slack\.com/services/T[A-Z0-9]+/B[A-Z0-9]+/[A-Za-z0-9]+:Slack Webhook URL detected
+
+# Firebase
+FIREBASE_API_KEY:AIza[0-9A-Za-z\\-_]{35}:Firebase API Key detected
+
+# JWT Tokens
+JWT_TOKEN:eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}:JWT Token detected
+
+# SSH URLs with credentials
+SSH_URL_WITH_CREDS:ssh://[^:]+:[^@]+@:SSH URL with credentials detected
+
+# Environment Variable Assignments (potentially sensitive)
+ENV_SECRET:export\s+[A-Z_]*SECRET[A-Z_]*=:Environment variable with SECRET in name
+ENV_PASSWORD:export\s+[A-Z_]*PASSWORD[A-Z_]*=:Environment variable with PASSWORD in name
+ENV_KEY:export\s+[A-Z_]*KEY[A-Z_]*=:Environment variable with KEY in name
+
+# Google Cloud
+GCP_API_KEY:AIza[0-9A-Za-z\\-_]{35}:Google Cloud API Key detected
+GCP_SERVICE_ACCOUNT:service_account.*private_key:GCP Service Account Key detected
+
+# Azure
+AZURE_CONNECTION_STRING:DefaultEndpointsProtocol=https:Azure Connection String detected
+
+# Stripe
+STRIPE_API_KEY:sk_live_[0-9a-zA-Z]{24}:Stripe Live API Key detected
+STRIPE_RESTRICTED_KEY:rk_live_[0-9a-zA-Z]{24}:Stripe Restricted Key detected
+
+# Twilio
+TWILIO_API_KEY:SK[0-9a-fA-F]{32}:Twilio API Key detected
+
+# NPM Token
+NPM_TOKEN:npm_[A-Za-z0-9]{36}:NPM Access Token detected
+
+# Generic Secrets (high entropy strings)
+HIGH_ENTROPY_STRING:['"'][A-Za-z0-9+/=]{40,}['"']:High entropy string detected (potential secret)
