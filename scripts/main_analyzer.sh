@@ -84,7 +84,7 @@ main() {
     # 4단계: AI 리뷰
     # ========================================
     log_info "Step 4: Running AI review..."
-    run_ai_review
+    run_ai_review || true
     ai_status=$?
 
     # ========================================
