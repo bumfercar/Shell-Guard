@@ -55,3 +55,7 @@ scripts/
   modules/           # 분석 모듈
   main_analyzer.sh   # 메인 스크립트
 ```
+
+## Test Feature
+
+This is a test change to trigger Shell-Guard analysis.
