@@ -63,13 +63,13 @@ run_security_scan() {
     done < "$PATTERNS_FILE"
 
     # 스캔 결과 요약
+    echo "TOTAL_ISSUES: $issues_found" >> "$SCAN_RESULT"
+
     if [ $issues_found -gt 0 ]; then
-        log_error "Security scan found $issues_found issue(s)"
-        echo "TOTAL_ISSUES: $issues_found" >> "$SCAN_RESULT"
-        return 2  # 보안 이슈 발견 시 특별한 반환 코드
+        log_warning "Security scan found $issues_found issue(s) - will be reported"
+        return 2  # 보안 이슈 발견 표시 (에러 아님)
     else
         log_success "Security scan completed - No issues found"
-        echo "TOTAL_ISSUES: 0" >> "$SCAN_RESULT"
         return 0
     fi
 }

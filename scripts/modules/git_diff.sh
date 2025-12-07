@@ -35,7 +35,7 @@ extract_diff() {
     }
 
     # patterns.txt 관련 diff 제거 (자기 자신 스캔 방지)
-    grep -v "scripts/config/patterns.txt" "${DIFF_FILE}.tmp" > "$DIFF_FILE" || true
+    grep -v "patterns.txt" "${DIFF_FILE}.tmp" > "$DIFF_FILE" || true
     rm -f "${DIFF_FILE}.tmp"
 
     # Diff 파일 크기 확인

@@ -3,7 +3,7 @@
 # main_analyzer.sh - Shell-Guard 메인 분석 스크립트
 # PR 변경사항 분석, 보안 스캔, 스타일 검사, AI 리뷰를 수행하고 결과를 GitHub PR에 댓글로 작성
 
-set -e
+# set -e는 사용하지 않음 (보안 이슈를 에러가 아닌 경고로 처리하기 위함)
 
 # 환경 변수 로드
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
