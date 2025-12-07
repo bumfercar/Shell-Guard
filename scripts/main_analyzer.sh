@@ -54,12 +54,13 @@ main() {
     # 2단계: 보안 스캔
     # ========================================
     log_info "Step 2: Running security scan..."
-    run_security_scan
-    security_status=$?
+    security_status=$(run_security_scan || true)
 
-    # 보안 이슈는 에러가 아닌 경고로 처리 (분석은 계속 진행)
-    if [ $security_status -eq 2 ]; then
-        log_warning "Security issues detected - will be reported in PR comment"
+    if [ "$security_status" -eq 2 ]; then
+        log_warning "Security issues detected - reported to PR comments, but build will continue"
+        # 절대로 exit 하지 않음 → Actions가 성공 상태로 종료됨
+    else
+        log_success "No security issues found"
     fi
 
     # ========================================
@@ -96,14 +97,15 @@ main() {
     # ========================================
     # 7단계: 보안 이슈 있으면 Changes Requested
     # ========================================
-    if [ $security_status -eq 2 ]; then
+    if [ "$security_status" -eq 2 ]; then
         log_warning "Requesting changes due to security issues..."
-        request_changes "🚨 보안 이슈가 발견되었습니다. PR 댓글의 상세 가이드를 확인하고 민감 정보를 제거해주세요."
+        request_changes "🚨 보안 이슈가 발견되었습니다. PR 댓글의 상세 가이드를 확인하고 민감 정보를 제거해주세요." || true
     fi
 
     log_success "=== Shell-Guard Analysis Completed Successfully ==="
 
-    return 0
+    # 보안 이슈가 있어도 exit 0으로 정상 종료
+    exit 0
 }
 
 # ========================================
