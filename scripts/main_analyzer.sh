@@ -57,20 +57,9 @@ main() {
     run_security_scan
     security_status=$?
 
-    # 보안 이슈 발견 시 즉시 처리
+    # 보안 이슈는 에러가 아닌 경고로 처리 (분석은 계속 진행)
     if [ $security_status -eq 2 ]; then
-        log_error "Critical security issues detected!"
-
-        # 보안 이슈 리포트 생성
-        generate_security_only_report
-
-        # GitHub에 댓글 작성 및 변경 요청
-        report_content=$(<"$FINAL_REPORT")
-        post_pr_comment "$report_content"
-        request_changes "🚨 보안 이슈가 발견되었습니다. 민감 정보를 제거해주세요."
-
-        log_error "Analysis stopped due to security issues"
-        exit 1
+        log_warning "Security issues detected - will be reported in PR comment"
     fi
 
     # ========================================
@@ -102,6 +91,14 @@ main() {
     if ! post_pr_comment "$report_content"; then
         log_error "Failed to post comment to GitHub"
         exit 1
+    fi
+
+    # ========================================
+    # 7단계: 보안 이슈 있으면 Changes Requested
+    # ========================================
+    if [ $security_status -eq 2 ]; then
+        log_warning "Requesting changes due to security issues..."
+        request_changes "🚨 보안 이슈가 발견되었습니다. PR 댓글의 상세 가이드를 확인하고 민감 정보를 제거해주세요."
     fi
 
     log_success "=== Shell-Guard Analysis Completed Successfully ==="
