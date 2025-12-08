@@ -13,23 +13,6 @@ GitHub PR 자동 분석 및 보안 스캔 시스템 (Pure Bash)
 
 ---
 
-## 🧪 로컬 간단 테스트
-
-GitHub에 올리기 전에 로컬에서 빠르게 테스트해보세요:
-
-```bash
-# 1. Shell-Guard 다운로드
-git clone https://github.com/bumfercar/Shell-Guard.git
-cd Shell-Guard
-
-# 2. 테스트 실행 (현재 Git 변경사항 분석)
-./test-local.sh YOUR_GEMINI_API_KEY
-```
-
-**주의:** 로컬 테스트에서는 PR 댓글 작성이 스킵되고, 터미널에 분석 결과만 출력됩니다.
-
----
-
 ## 🚀 빠른 시작 (3단계)
 
 ### 1️⃣ Gemini API 키 발급 (무료)
