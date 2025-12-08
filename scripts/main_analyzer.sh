@@ -26,11 +26,12 @@ main() {
     extract_diff || exit 1
 
     log_info "Step 2: Running security scan..."
-    security_status=$(run_security_scan || true)
+    run_security_scan
+    security_status=$?
 
     if [ "$security_status" -eq 2 ]; then
         log_warning "Security issues detected"
-    else
+    elif [ "$security_status" -eq 0 ]; then
         log_success "No security issues found"
     fi
 
@@ -45,7 +46,7 @@ main() {
 
     log_info "Step 6: Posting comment to GitHub PR..."
     report_content=$(<"$FINAL_REPORT")
-    post_pr_comment "$report_content" || exit 1
+    post_pr_comment "$report_content" || true
 
     if [ "$security_status" -eq 2 ]; then
         log_warning "Requesting changes due to security issues..."
