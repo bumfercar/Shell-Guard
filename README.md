@@ -4,7 +4,7 @@ GitHub PR 자동 분석 및 보안 스캔 시스템 (Pure Bash)
 
 **어떤 GitHub 레포지토리에서든 사용 가능합니다!**
 
-## ✨ 주요 기능
+## ✨ 주요 기능???
 
 - 🔐 **보안 스캔**: API 키, 비밀번호, 토큰 등 민감 정보 자동 감지
 - 🧹 **코드 스타일 검사**: trailing whitespace, TODO/FIXME 등
