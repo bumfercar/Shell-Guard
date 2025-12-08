@@ -1,0 +1,13 @@
+# Test File for Shell-Guard
+
+This is a test to verify Shell-Guard is working correctly.
+
+## Test Cases
+
+1. Normal code - should pass
+2. Security issue test (commented out):
+   # api_key = "sk_test_1234567890abcdefghijklmnop"
+3. Style check - no trailing spaces
+4. AI review test
+
+TODO: This is a test TODO comment
