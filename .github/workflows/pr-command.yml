@@ -30,6 +30,18 @@ jobs:
           # patterns.txt 파일 생성 (.gitignore되어 있으므로)
           cp scripts/config/patterns.txt.example scripts/config/patterns.txt
 
+      - name: Get PR details
+        id: pr
+        run: |
+          PR_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}")
+
+          BASE_SHA=$(echo "$PR_DATA" | jq -r .base.sha)
+          HEAD_SHA=$(echo "$PR_DATA" | jq -r .head.sha)
+
+          echo "BASE_SHA=$BASE_SHA" >> $GITHUB_OUTPUT
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_OUTPUT
+
       - name: Parse and Execute Command
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -38,35 +50,20 @@ jobs:
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
-          COMMENT_USER: ${{ github.event.comment.user.login }}
+          BASE_SHA: ${{ steps.pr.outputs.BASE_SHA }}
+          HEAD_SHA: ${{ steps.pr.outputs.HEAD_SHA }}
         run: |
-          chmod +x scripts/modules/github_api.sh
-
-          # 댓글 내용에서 명령어 추출
           COMMAND=$(echo "$COMMENT_BODY" | grep -oE '^/[a-z-]+' | head -1)
 
           case "$COMMAND" in
-            /approve)
-              echo "Approving PR..."
-              bash scripts/modules/github_api.sh approve_pr "$PR_NUMBER"
-              ;;
-            /reject)
-              echo "Rejecting PR..."
-              bash scripts/modules/github_api.sh reject_pr "$PR_NUMBER"
-              ;;
-            /scan)
-              echo "Re-scanning PR..."
-              chmod +x scripts/main_analyzer.sh
-              chmod +x scripts/modules/*.sh
-              bash scripts/main_analyzer.sh
-              ;;
-            /ai-review)
-              echo "Running AI review..."
+            /scan|/ai-review)
+              echo "Running analysis..."
               chmod +x scripts/main_analyzer.sh
               chmod +x scripts/modules/*.sh
               bash scripts/main_analyzer.sh
               ;;
             *)
-              echo "Unknown command or not a command: $COMMAND"
+              echo "Unknown command: $COMMAND"
+              echo "Available commands: /scan, /ai-review"
               ;;
           esac
