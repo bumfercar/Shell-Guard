@@ -21,7 +21,7 @@ GitHub PR 자동 분석 및 보안 스캔 시스템 (Pure Bash)
 2. **Get API Key** 클릭
 3. 키 복사
 
-### 2️⃣ GitHub Actions 워크플로우 추가
+### 2️⃣ GitHub Actions 워크플로우 추가.
 
 **당신의 레포지토리**에 다음 파일 생성:
 
