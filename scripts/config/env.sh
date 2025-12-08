@@ -56,33 +56,24 @@ AI_RESULT="${TMP_DIR}/ai_result.txt"
 FINAL_REPORT="${TMP_DIR}/final_report.md"
 
 # ========================================
-# 색상 코드 (로컬 테스트용)
-# ========================================
-COLOR_RED='\033[0;31m'
-COLOR_GREEN='\033[0;32m'
-COLOR_YELLOW='\033[1;33m'
-COLOR_BLUE='\033[0;34m'
-COLOR_RESET='\033[0m'
-
-# ========================================
 # 유틸리티 함수
 # ========================================
 
-# 로그 출력 함수
+# 로그 출력 함수 (색상 코드 제거)
 log_info() {
-    echo -e "${COLOR_BLUE}[INFO]${COLOR_RESET} $1"
+    echo "[INFO] $1"
 }
 
 log_success() {
-    echo -e "${COLOR_GREEN}[SUCCESS]${COLOR_RESET} $1"
+    echo "[SUCCESS] $1"
 }
 
 log_warning() {
-    echo -e "${COLOR_YELLOW}[WARNING]${COLOR_RESET} $1"
+    echo "[WARNING] $1"
 }
 
 log_error() {
-    echo -e "${COLOR_RED}[ERROR]${COLOR_RESET} $1" >&2
+    echo "[ERROR] $1" >&2
 }
 
 # 임시 디렉토리 생성
