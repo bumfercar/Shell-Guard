@@ -6,13 +6,13 @@
 *.temp
 /scripts/tmp/
 
-# 보안 패턴 파일 (diff 스캔 방지)
+# 보안 패턴 파일 
 scripts/config/patterns.txt
 
 # 로그 파일
 *.log
 
-# 환경 변수 및 시크릿 (절대 커밋하지 말 것!)
+# 환경 변수 및 시크릿 파일
 .env
 .env.local
 *.key
