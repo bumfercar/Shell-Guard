@@ -28,10 +28,19 @@ chmod +x "${SCRIPT_DIR}/scripts/modules/"*.sh
 echo "현재 Git 변경사항 분석 중..."
 echo ""
 
-bash "${SCRIPT_DIR}/scripts/main_analyzer.sh" 2>&1 | grep -v "Failed to post comment" | grep -v "GITHUB_TOKEN"
+TMP_PID=$$
+bash "${SCRIPT_DIR}/scripts/main_analyzer.sh" 2>&1 | grep -v "Failed to post comment" | grep -v "Bad credentials"
 
-if [ -f "/tmp/shell-guard-$$/final_report.md" ]; then
-    echo ""
-    echo "=== 분석 결과 ==="
-    cat "/tmp/shell-guard-$$/final_report.md"
+echo ""
+echo "========================================="
+echo "=== 최종 분석 결과 ==="
+echo "========================================="
+echo ""
+
+if [ -f "/tmp/shell-guard-${TMP_PID}/final_report.md" ]; then
+    cat "/tmp/shell-guard-${TMP_PID}/final_report.md"
+else
+    echo "⚠️  결과 파일을 찾을 수 없습니다."
+    echo "가능한 위치:"
+    ls -la /tmp/shell-guard-* 2>/dev/null || echo "  (임시 파일 없음)"
 fi

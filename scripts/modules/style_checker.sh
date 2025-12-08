@@ -45,14 +45,14 @@ run_style_check() {
 
 format_style_result_markdown() {
     if [ ! -f "$STYLE_RESULT" ]; then
-        echo "✅ **No style issues detected**"
+        echo "**No style issues detected**"
         return 0
     fi
 
     local total=$(grep "TOTAL_STYLE_ISSUES:" "$STYLE_RESULT" | cut -d: -f2 | tr -d ' ' || echo "0")
 
     if [ "$total" -eq 0 ]; then
-        echo "✅ **No style issues detected**"
+        echo "**No style issues detected**"
         return 0
     fi
 

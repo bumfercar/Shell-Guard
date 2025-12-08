@@ -1,18 +1,16 @@
 #!/bin/bash
 
 # github_api.sh - GitHub API 통신 모듈
-# PR 댓글 작성, 리뷰 승인/거부 등
+# PR 댓글 작성
 
 set -e
 
-# 환경 변수 로드
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${SCRIPT_DIR}/config/env.sh"
 
 # ========================================
 # 함수: PR에 댓글 작성
 # ========================================
-#인자: $1 = 댓글 내용 (Markdown)
 post_pr_comment() {
     local comment_body="$1"
 
@@ -29,11 +27,9 @@ post_pr_comment() {
 
     local api_url="${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/issues/${PR_NUMBER}/comments"
 
-    # JSON 페이로드 생성
     local json_payload
     json_payload=$(jq -n --arg body "$comment_body" '{body: $body}')
 
-    # API 호출
     local response
     response=$(curl -s -w "\n%{http_code}" -X POST "$api_url" \
         -H "Authorization: token $GITHUB_TOKEN" \
@@ -69,14 +65,12 @@ approve_pr() {
 
     local api_url="${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/pulls/${pr_number}/reviews"
 
-    # JSON 페이로드 생성
     local json_payload
     json_payload=$(jq -n '{
         body: "✅ Approved by Shell-Guard",
         event: "APPROVE"
     }')
 
-    # API 호출
     local response
     response=$(curl -s -w "\n%{http_code}" -X POST "$api_url" \
         -H "Authorization: token $GITHUB_TOKEN" \
@@ -111,14 +105,12 @@ request_changes() {
 
     local api_url="${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/pulls/${pr_number}/reviews"
 
-    # JSON 페이로드 생성
     local json_payload
     json_payload=$(jq -n --arg reason "$reason" '{
         body: $reason,
         event: "REQUEST_CHANGES"
     }')
 
-    # API 호출
     local response
     response=$(curl -s -w "\n%{http_code}" -X POST "$api_url" \
         -H "Authorization: token $GITHUB_TOKEN" \
@@ -147,10 +139,8 @@ reject_pr() {
 
     log_info "Rejecting PR #${pr_number}"
 
-    # 댓글 작성
     post_pr_comment "❌ **Shell-Guard**: $reason"
 
-    # 변경 요청
     request_changes "$reason" "$pr_number"
 
     return $?
@@ -169,7 +159,6 @@ get_pr_info() {
 
     local api_url="${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/pulls/${pr_number}"
 
-    # API 호출
     curl -s -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         "$api_url"
@@ -190,7 +179,6 @@ get_pr_comments() {
 
     local api_url="${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/issues/${pr_number}/comments"
 
-    # API 호출
     curl -s -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         "$api_url"
@@ -202,7 +190,6 @@ get_pr_comments() {
 # 메인 실행부 (직접 실행 시 - 테스트용)
 # ========================================
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
-    # 명령어 인자 처리
     case "${1:-}" in
         approve_pr)
             approve_pr "${2:-}"

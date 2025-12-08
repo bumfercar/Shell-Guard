@@ -22,7 +22,6 @@ require_env() {
   fi
 }
 
-# simple retry with exponential backoff for curl
 curl_retry() {
   local tries=0
   local max=3
@@ -47,7 +46,6 @@ curl_retry() {
   done
 }
 
-# create workdir
 make_workdir() {
   if [ -n "${WORKDIR-}" ]; then
     mkdir -p "$WORKDIR"
@@ -61,7 +59,6 @@ make_workdir() {
   exec > >(tee -a "$LOG_FILE") 2> >(tee -a "$WORKDIR/error.log" >&2)
 }
 
-# simple lock to avoid parallel runs for same PR
 acquire_lock() {
   local lockfile="/tmp/shellguard_${REPO_FULL_NAME//\//_}_$PR_NUMBER.lock"
   exec 9>"$lockfile"

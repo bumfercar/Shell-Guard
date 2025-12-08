@@ -17,7 +17,6 @@ source "${SCRIPT_DIR}/config/env.sh"
 extract_diff() {
     log_info "Extracting git diff..."
 
-    # BASE_SHA와 HEAD_SHA가 설정되어 있는지 확인
     if [ -z "$BASE_SHA" ] || [ -z "$HEAD_SHA" ]; then
         log_warning "BASE_SHA or HEAD_SHA not set. Using origin/main...HEAD"
         BASE_REF="origin/main"
@@ -27,23 +26,19 @@ extract_diff() {
         HEAD_REF="$HEAD_SHA"
     fi
 
-    # Unified format으로 diff 추출
-    # --no-color: 색상 코드 제거
+    # Git diff 추출
     git diff "${BASE_REF}...${HEAD_REF}" --unified=3 --no-color > "${DIFF_FILE}.tmp" 2>&1 || {
         log_error "Failed to extract git diff"
         return 1
     }
 
-    # patterns.txt 관련 diff 제거 (자기 자신 스캔 방지)
     grep -v "patterns.txt" "${DIFF_FILE}.tmp" > "$DIFF_FILE" || true
     rm -f "${DIFF_FILE}.tmp"
 
-    # Diff 파일 크기 확인
     local diff_size
     diff_size=$(wc -c < "$DIFF_FILE")
     log_info "Diff size: ${diff_size} bytes"
 
-    # 파일이 비어있는지 확인
     if [ ! -s "$DIFF_FILE" ]; then
         log_warning "No changes detected in this PR"
         echo "No changes detected" > "$DIFF_FILE"
@@ -63,7 +58,6 @@ extract_diff() {
 # ========================================
 # 함수: Diff 크기 축소
 # ========================================
-# Diff가 너무 클 경우 적절히 잘라냄
 truncate_diff() {
     local temp_file="${TMP_DIR}/diff_truncated.tmp"
 
@@ -92,7 +86,6 @@ get_changed_files() {
         HEAD_REF="$HEAD_SHA"
     fi
 
-    # 변경된 파일 목록 추출
     git diff --name-only "${BASE_REF}...${HEAD_REF}" 2>/dev/null || {
         log_error "Failed to get changed files"
         return 1
@@ -115,7 +108,6 @@ get_diff_stats() {
         HEAD_REF="$HEAD_SHA"
     fi
 
-    # 파일별 추가/삭제 라인 수 통계
     git diff --stat "${BASE_REF}...${HEAD_REF}" 2>/dev/null || {
         log_error "Failed to get diff stats"
         return 1
@@ -127,7 +119,6 @@ get_diff_stats() {
 # ========================================
 # 함수: 특정 파일의 diff 추출
 # ========================================
-# 인자: $1 = 파일 경로
 get_file_diff() {
     local file_path="$1"
 
@@ -144,7 +135,6 @@ get_file_diff() {
         HEAD_REF="$HEAD_SHA"
     fi
 
-    # 특정 파일의 diff만 추출
     git diff "${BASE_REF}...${HEAD_REF}" -- "$file_path" 2>/dev/null || {
         log_error "Failed to get diff for file: $file_path"
         return 1
@@ -156,14 +146,12 @@ get_file_diff() {
 # ========================================
 # 함수: Diff에서 추가된 라인만 추출
 # ========================================
-# Diff 파일에서 '+' 로 시작하는 라인 (추가된 코드)만 추출
 extract_added_lines() {
     if [ ! -f "$DIFF_FILE" ]; then
         log_error "Diff file not found: $DIFF_FILE"
         return 1
     fi
 
-    # '+' 로 시작하는 라인 추출 (단, '+++' 헤더 제외)
     grep '^+[^+]' "$DIFF_FILE" | sed 's/^+//' || true
 
     return 0
@@ -178,7 +166,6 @@ extract_deleted_lines() {
         return 1
     fi
 
-    # '-' 로 시작하는 라인 추출 (단, '---' 헤더 제외)
     grep '^-[^-]' "$DIFF_FILE" | sed 's/^-//' || true
 
     return 0

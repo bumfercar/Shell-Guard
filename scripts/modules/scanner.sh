@@ -9,11 +9,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${SCRIPT_DIR}/config/env.sh"
 
-# ========================================
-# 함수: 보안 스캔 실행
-# ========================================
-# patterns.txt의 정규식 패턴으로 diff 파일을 스캔
-# 결과는 SCAN_RESULT 파일에 저장
+
 run_security_scan() {
     log_info "Running security scan..."
 
@@ -28,27 +24,20 @@ run_security_scan() {
         return 1
     fi
 
-    # 결과 파일 초기화
     > "$SCAN_RESULT"
 
     local issues_found=0
 
-    # patterns.txt를 한 줄씩 읽어서 검사
     while IFS=: read -r pattern_name pattern_regex description; do
-        # 주석이나 빈 줄 무시
         if [[ "$pattern_name" =~ ^#.*$ ]] || [ -z "$pattern_name" ]; then
             continue
         fi
-
-        # Diff 파일에서 추가된 라인만 검사 ('+' 로 시작하는 라인)
-        # patterns.txt 파일 자체는 제외 (diff 헤더와 내용 모두)
-        local matches
+       local matches
         matches=$(grep '^+[^+]' "$DIFF_FILE" | grep -v 'scripts/config/patterns.txt' | grep -v '^+++' | grep -E "$pattern_regex" || true)
 
         if [ -n "$matches" ]; then
             issues_found=$((issues_found + 1))
 
-            # 결과 파일에 기록
             {
                 echo "---"
                 echo "Pattern: $pattern_name"
@@ -62,12 +51,11 @@ run_security_scan() {
         fi
     done < "$PATTERNS_FILE"
 
-    # 스캔 결과 요약
     echo "TOTAL_ISSUES: $issues_found" >> "$SCAN_RESULT"
 
     if [ $issues_found -gt 0 ]; then
-        log_warning "Security scan found $issues_found issue(s) - will be reported"
-        return 2  # 보안 이슈 발견 표시 (에러 아님)
+        log_warning "Security scan found $issues_found issue(s)"
+        return 2
     else
         log_success "Security scan completed - No issues found"
         return 0
@@ -93,7 +81,6 @@ format_scan_result_markdown() {
         return 0
     fi
 
-    # Markdown 형식으로 출력
     cat <<EOF
 # 🚨 보안 경고: 민감 정보 감지됨
 
@@ -178,10 +165,6 @@ EOF
     return 0
 }
 
-# ========================================
-# 함수: 특정 파일에 대한 보안 스캔
-# ========================================
-# 인자: $1 = 파일 경로
 scan_file() {
     local file_path="$1"
 
@@ -231,10 +214,6 @@ scan_file() {
     fi
 }
 
-# ========================================
-# 함수: 커스텀 패턴 추가
-# ========================================
-# 인자: $1 = 패턴명, $2 = 정규식, $3 = 설명
 add_custom_pattern() {
     local pattern_name="$1"
     local pattern_regex="$2"
@@ -252,9 +231,6 @@ add_custom_pattern() {
     return 0
 }
 
-# ========================================
-# 함수: 고위험 패턴만 스캔
-# ========================================
 # AWS, GitHub, Private Key 등 고위험 패턴만 검사
 scan_high_risk_only() {
     log_info "Running high-risk security scan..."
@@ -309,11 +285,7 @@ scan_high_risk_only() {
     fi
 }
 
-# ========================================
-# 메인 실행부 (직접 실행 시)
-# ========================================
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
-    # 임시 디렉토리 생성
     create_tmp_dir
 
     # Diff 파일이 없으면 먼저 생성
