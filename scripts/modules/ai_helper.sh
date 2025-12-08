@@ -1,17 +1,10 @@
 #!/bin/bash
 
-# ai_helper.sh - AI 리뷰 모듈
-# OpenAI API를 사용하여 diff 분석 및 리뷰 생성
-
 set -e
 
-# 환경 변수 로드
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${SCRIPT_DIR}/config/env.sh"
 
-# ========================================
-# 함수: AI 리뷰 실행
-# ========================================
 run_ai_review() {
     log_info "Running AI review..."
 
@@ -20,22 +13,18 @@ run_ai_review() {
         return 1
     fi
 
-    # Gemini API 키 확인
     if [ -z "$GEMINI_API_KEY" ]; then
         log_warning "GEMINI_API_KEY not set. Skipping AI review"
         echo "AI review skipped (API key not configured)" > "$AI_RESULT"
         return 0
     fi
 
-    # jq와 curl 설치 확인
     check_jq_installed || return 1
     check_curl_installed || return 1
 
-    # Diff 내용 읽기
     local diff_content
     diff_content=$(<"$DIFF_FILE")
 
-    # Diff가 너무 큰 경우 축소
     local diff_lines
     diff_lines=$(echo "$diff_content" | wc -l | tr -d ' ')
 
@@ -45,19 +34,14 @@ run_ai_review() {
         diff_content="${diff_content}"$'\n\n'"... (truncated)"
     fi
 
-    # AI 프롬프트 생성
     local prompt
     prompt=$(generate_ai_prompt "$diff_content")
 
-    # Gemini API 호출
     call_gemini_api "$prompt"
 
     return $?
 }
 
-# ========================================
-# 함수: AI 프롬프트 생성
-# ========================================
 generate_ai_prompt() {
     local diff_content="$1"
 
@@ -83,29 +67,34 @@ ${diff_content}
 \`\`\`
 EOF
 }
-# ========================================
-# 함수: Gemini API 호출 (Gemini 2.0 Flash Lite 적용)
-# ========================================
+
 call_gemini_api() {
     local prompt="$1"
+    local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent"
 
-    # [수정됨] 사용자 목록에 있는 'gemini-2.0-flash-lite' 사용
-    # 이 모델은 목록에 확실히 존재하며, 가벼워서 무료 할당량 내에서 동작할 가능성이 높습니다.
-    #local api_url="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}"
-    local api_url="https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}"
-    # JSON 페이로드
     local json_payload
     json_payload=$(jq -n \
         --arg prompt "$prompt" \
         '{
-            contents: [{ parts: [{ text: $prompt }] }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 2000 }
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: $prompt
+                        }
+                    ]
+                }
+            ],
+            generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 2000
+            }
         }')
 
-    # API 호출 (-H "x-goog-api-key" 제거함)
     local response
     response=$(curl -s -X POST "$api_url" \
         -H "Content-Type: application/json" \
+        -H "x-goog-api-key: ${GEMINI_API_KEY}" \
         -d "$json_payload" 2>&1)
 
     local curl_status=$?
@@ -116,41 +105,26 @@ call_gemini_api() {
         return 0
     fi
 
-    # 응답 파싱
     local ai_content
     ai_content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null || echo "")
 
-    # 파싱 실패 시 디버깅용 처리
     if [ -z "$ai_content" ] || [ "$ai_content" == "null" ]; then
         log_warning "Gemini API returned invalid response"
-        
-        # 에러 메시지 확인
+
         local error_msg
         error_msg=$(echo "$response" | jq -r '.error.message' 2>/dev/null || echo "Unknown error")
         log_warning "API Error: $error_msg"
-
-        # 만약 이것도 Quota 에러가 나면 Mock 데이터로 방어
-        if [[ "$error_msg" == *"Quota"* ]] || [[ "$error_msg" == *"limit"* ]]; then
-             echo "✅ (API Quota Limit) AI 분석 결과를 표시합니다 (Failover Mode)." > "$AI_RESULT"
-             echo "" >> "$AI_RESULT"
-             echo "**[AI Summary]**" >> "$AI_RESULT"
-             echo "주요 로직 변경 사항이 감지되었습니다. 코드 안정성이 개선되었으며 보안 이슈는 발견되지 않았습니다." >> "$AI_RESULT"
-             return 0
-        fi
 
         echo "AI review skipped: $error_msg" > "$AI_RESULT"
         return 0
     fi
 
-    # 결과 저장
     echo "$ai_content" > "$AI_RESULT"
     log_success "AI review completed successfully"
 
     return 0
 }
-# ========================================
-# 함수: AI 리뷰 결과를 Markdown으로 변환
-# ========================================
+
 format_ai_result_markdown() {
     if [ ! -f "$AI_RESULT" ]; then
         echo "⚠️ **AI 리뷰가 수행되지 않았습니다**"
@@ -169,15 +143,11 @@ format_ai_result_markdown() {
         return 0
     fi
 
-    # AI 결과 그대로 출력 (이미 Markdown 형식)
     echo "$ai_content"
 
     return 0
 }
 
-# ========================================
-# 함수: 간단한 AI 요약 (작은 diff용)
-# ========================================
 get_quick_summary() {
     if [ ! -f "$DIFF_FILE" ]; then
         echo "No changes detected"
@@ -201,9 +171,6 @@ get_quick_summary() {
     return 0
 }
 
-# ========================================
-# 메인 실행부 (직접 실행 시)
-# ========================================
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
     create_tmp_dir
 
